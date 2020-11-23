@@ -3,6 +3,33 @@ from rest_framework.authtoken.admin import User
 import re
 
 
+class UserModelSerializer(serializers.ModelSerializer):
+    id = serializers.IntegerField(required=False, read_only=True)
+    username = serializers.CharField(max_length=150, min_length=1, required=True)
+    first_name = serializers.CharField(max_length=30, required=False)
+    last_name = serializers.CharField(max_length=150, required=False)
+    is_active = serializers.BooleanField(required=True)
+    last_login = serializers.CharField(max_length=120, required=False, read_only=True)
+    is_superuser = serializers.BooleanField(required=False, read_only=True)
+    password = serializers.CharField(max_length=120, write_only=True, required=True)
+
+    class Meta:
+        model = User
+        fields = ['id', 'username', 'first_name', 'last_name', 'is_active', 'last_name', 'is_superuser', 'last_login', 'password']
+
+    def validate_password(self, value):
+        if re.match('^(?=.*[A-Z])(?=.*\d).{8,}$', value) is None:
+            raise serializers.ValidationError("Password should be 8+ characters, 1 capital, 1 numeric")
+        return value
+
+    def validate_username(self, value):
+        if not not User.objects.filter(username=value):
+            raise serializers.ValidationError("A user with that username already exists.")
+        elif re.match('^[\w.@+-]+$', value) is None:
+            raise serializers.ValidationError("150 characters or fewer. Letters, digits and @/./+/-/_ only.")
+        return value
+
+
 class UserSerializer(serializers.Serializer):
     id = serializers.IntegerField(required=False, read_only=True)
     username = serializers.CharField(max_length=150, min_length=1, required=True)
@@ -31,7 +58,7 @@ class UserSerializer(serializers.Serializer):
         return value
 
     def validate_username(self, value):
-        if not not User.objects.filter(username=value):
+        if User.objects.filter(username=value).count() > 0  :
             raise serializers.ValidationError("A user with that username already exists.")
         elif re.match('^[\w.@+-]+$', value) is None:
             raise serializers.ValidationError("150 characters or fewer. Letters, digits and @/./+/-/_ only.")
