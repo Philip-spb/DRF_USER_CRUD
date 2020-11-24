@@ -23,7 +23,7 @@ class UserModelSerializer(serializers.ModelSerializer):
         return value
 
     def validate_username(self, value):
-        if User.objects.filter(username=value).count() > 0:
+        if User.objects.filter(username=value):
             raise serializers.ValidationError("A user with that username already exists.")
         elif re.match('^[\w.@+-]+$', value) is None:
             raise serializers.ValidationError("150 characters or fewer. Letters, digits and @/./+/-/_ only.")
@@ -58,7 +58,7 @@ class UserSerializer(serializers.Serializer):
         return value
 
     def validate_username(self, value):
-        if User.objects.filter(username=value).count() > 0:
+        if User.objects.filter(username=value):
             raise serializers.ValidationError("A user with that username already exists.")
         elif re.match('^[\w.@+-]+$', value) is None:
             raise serializers.ValidationError("150 characters or fewer. Letters, digits and @/./+/-/_ only.")
